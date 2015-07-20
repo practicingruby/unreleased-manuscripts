@@ -1,3 +1,61 @@
+We’re doing cost calculations for building zen gardens!
+
+The idea being that there will be a common set of supplies for a store that sells zen gardens, and they will be reused across various different styles of gardens.
+
+But the gardens are not sold in fixed sizes, the customer gets to specify the size they want, and the calculator will figure out how much materials are needed, and what those materials will cost (as well as a very basic shipping weight calculation)
+
+So the format we have right now for specifying materials and projects is just some CSV files…
+
+For example, this is the materials list: https://github.com/PracticingDeveloper/formula-engine/blob/master/db/materials.csv
+
+The weight column is a set of formulas… no clue if @rubysolo tried to pick realistic values for those, but it’s unimportant.
+
+In there… you see `quantity`, which is going to get defined elsewhere.
+
+But here you see the basic idea behind using a formula engine… imagine instead of CSV, you were using a database to store this information.
+
+Elsewhere, you’d define a project, which uses a subset of these materials.
+
+For example, this is a rectangular zen garden box: https://github.com/PracticingDeveloper/formula-engine/blob/master/db/projects/calm.csv
+
+Notice that the names here match that of the names on the materials list, and that the formulas being used are meant to determine the `quantity` used in the material weight calculations.
+
+So we can have formulas built on top of other formulas… we can look at how that’s wired up later.
+
+And here we have another project… which is a circular zen garden with two colors of sand (suitable for building a yin yang pattern… so I suppose it’s a Taoist garden, actually)
+
+https://github.com/PracticingDeveloper/formula-engine/blob/master/db/projects/yinyang.csv
+
+Notice here… that there are few different kinds of terms being used in the formulas: `diameter`, `radius`, `cylinder`
+
+Some of these would be specified directly as variables… i.e. you’d enter a diameter for the circle
+
+But then others can be defined by global rules… for example, that `:radius => “diameter/2"`
+
+Or ` 'cylinder' => '3.1416 * radius^2 * height’`
+And so in this sense, you can define these kinds of calculations up front, then use them throughout your calculations.
+
+When you glue all of this together, you get a simple workflow that basically asks the customer to pick a project, specify some basic dimensions (i.e. a diameter for a circular project, or a width and height for a rectangular one), and then Dentaku would churn through all of this and convert those measurements into areas and volumes, and then the areas and volumes into weights, and then all of that into costs.
+
+That’s pretty much what we have so far.
+
+## Limitations
+
+ For right now just as a tentative plan, I think we’ll create a section about “limitations” and include in it things like performance, the lack of aggregate functions, and whatever else we come up with.
+ 
+ Current state: If you're dealing with no more than thousands or tens of thousands of data points, things will probably work fine (e.g. similar to a typical Excel sheet)... if you're dealing with millions of records, processing
+ is going to be pretty slow (verify w. benchmark)
+ 
+ ## Implementation details
+ 
+ - Parser is plain Ruby (as opposed to something like Racc)
+ - Parsing and evaluation done in one step, could probably optimize significantly by introducing precompilation
+ - Built-ins are not currently implemented using extension point for custom function definitions, but probably could be.
+ - Missing a list (Array) datatype.
+
+
+--------------------------------------------------
+
 ## SETUP SCENARIO:
 Startup business model is the "Etsy" of DIY zen gardens. (Market viability left
 as an exercise for the reader) Users of the site can post projects that define a
