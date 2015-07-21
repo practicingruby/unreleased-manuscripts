@@ -56,6 +56,79 @@ That’s pretty much what we have so far.
 
 --------------------------------------------------
 
+@srdjan: I built an app that replaced a bunch of excel spreadsheets with embedded formulas that the business sharing with dropbox.  The requirement was to keep the existing formulas as much as possible and allow for the end-users to update the formulas as needed without code changes.
+
+rubysolo [2:12 PM]
+The domain was construction, so the formulas were for calculating things like the number of sheets of drywall required to cover walls given a perimeter and ceiling height.
+
+rubysolo [2:12 PM]
+@gregory_brown: they should follow the same rules — basically some identifier and a list of arguments in parentheses.
+
+gregory_brown [2:13 PM] 
+Nice! Then yeah, it’d be great to make the system use its own extension points
+
+rubysolo [2:13 PM] 
+stepping away for a minute...
+
+gregory_brown [2:13 PM] 
+No problem, thanks for your help!
+
+gregory_brown [2:14 PM]
+@srdjan: I’ve run into this problem a few times myself… in a publishing company’s application where we ended up having a Treetop parser or something, and in a food distribution domain where you were doing things like shipping cost calculations, fuel cost estimates, etc.
+
+gregory_brown [2:15 PM]
+It makes sense when you have technical users (i.e. business analysts), but when their experience level isn’t much higher than that of using some Excel functions.
+
+paulh16 [2:15 PM] 
+joined #general
+
+gregory_brown [2:15 PM] 
+A formula engine basically gives them a sandbox to write certain kinds of dynamic calculations in, without security concerns because it’s a parsed external DSL rather than evaluated code.
+
+gregory_brown [2:16 PM]
+And in my case… it usually meant a bunch of complex queries and data transformations were being done in the Ruby/Rails app, and then rolled up and sanitized bits of that data were being passed into the formula engine to be operated on.
+
+srdjan [2:16 PM] 
+right
+
+gregory_brown [2:17 PM] 
+In one situation we actually embedded a Lua interpreter (locked down) into a Rails app, and then preloaded a bunch of custom functions and some data tables
+
+gregory_brown [2:17 PM]
+then the output of that would be converted back into Ruby values and used within the Rails app./
+
+srdjan [2:17 PM] 
+interesting
+
+gregory_brown [2:18 PM] 
+What @rubysolo has done here with Dentaku is give folks a formula parser that has some builtins and can be extended with your own functions, written in pure Ruby w. no dependencies
+
+gregory_brown [2:18 PM]
+Which is something I wish I had when I did this a few years ago, because that would have saved me from building brittle, creaky underplumbing.
+
+srdjan [2:19 PM] 
+I was going to ask, heh, why not use Lisp-style evaluation: `(* 2 (+ 1 3))`
+
+srdjan [2:19 PM]
+but i'm guessing that switching the evaluation style would freak out business analysts
+
+gregory_brown [2:19 PM] 
+No harm in doing that… but keep in mind the target audience for this kind of thing is usually an excel user
+
+gregory_brown [2:19 PM]
+also, formulas are simple enough and syntax is simple enough that style doesn’t make much of a difference here.
+
+packetmonkey [2:21 PM] 
+We do a similar thing in some cases where we try to aggregate costing information but let our business consultants run various projects and options with a front end we hacked together using parslet.
+
+gregory_brown [2:22 PM] 
+I guess another theoretical upside of using an existing formula engine would be that it’d be easy to share custom extensions.
+
+gregory_brown [2:23 PM]2:23
+And of course… gain from whatever gets added to the core engine by the community.
+
+---------------------------------------------------
+
 ## SETUP SCENARIO:
 Startup business model is the "Etsy" of DIY zen gardens. (Market viability left
 as an exercise for the reader) Users of the site can post projects that define a
