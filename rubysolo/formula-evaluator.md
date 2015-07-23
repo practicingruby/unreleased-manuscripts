@@ -1,3 +1,19 @@
+# Safely evaluating user-defined formulas and calculations
+
+There are some applications where you need to support lots of small and simple calculations, the sort of stuff that anyone familiar with Excel would be comfortable writing.
+
+If you take these simple computations and put them all directly into an application's source code, it means that whenever a small change is needed, a programmer needs to modify and redeploy the application. If we assume that there is at least one user of the application who is comfortable writing Excel-style formulas to cover the basic computations related to their business, giving them a way to do this kind of work without modifying the application's source code can be very useful.
+
+To support this level of flexibility at runtime, some sort of runtime scripting capability is needed, whether it means storing code in a database or uploading files with custom calculations to extend the functionality of a deployed application. However, it is risky for a number of reasons to use Ruby code for this purpose:
+
+* Safely evaluating custom Ruby code at runtime presents many security challenges,  at both the application and operating system level. Creating some sort of sandboxed environment is possible, but not trivial.
+*  Ruby is a very complex language with rich syntax, and so it is likely to give much more power than what is actually needed for the purposes of supporting simple numeric and logical computation. This means both more for the users to learn, and more opportunities to run into problems.
+* Debugging Ruby code that was evaluated at runtime can be very challenging. It is possible to add constraints to mitigate this problem somewhat, but doing so requires careful design consideration.
+* Once you decide to allow user-defined Ruby scripts to be executed at runtime, you will inevitably end up spending as much time and effort thinking through that design decision as you do on building the actual computational model your application needs. In other words, you will end up dealing with many incidental implementation details rather than the functional requirements of the system you're building.
+
+
+------------------------------------------------------------------------------------------------------------
+
 We’re doing cost calculations for building zen gardens!
 
 The idea being that there will be a common set of supplies for a store that sells zen gardens, and they will be reused across various different styles of gardens.
@@ -57,10 +73,7 @@ That’s pretty much what we have so far.
 --------------------------------------------------
 
 ## SETUP SCENARIO:
-Startup business model is the "Etsy" of DIY zen gardens. (Market viability left
-as an exercise for the reader) Users of the site can post projects that define a
-shopping list for the materials to build their particular design of zen garden,
-but the purchaser can customize the dimensions of the garden, so quantities must be calculated at runtime based on the user-supplied dimensions.
+Startup business model is the "Etsy" of DIY zen gardens. (Market viability left as an exercise for the reader) Users of the site can post projects that define a shopping list for the materials to build their particular design of zen garden, but the purchaser can customize the dimensions of the garden, so quantities must be calculated at runtime based on the user-supplied dimensions.
 
 ## INTRO:
 One option to solve this sort of problem is to allow the users to specify
