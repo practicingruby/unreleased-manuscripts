@@ -1,5 +1,26 @@
+
 # Safely evaluating user-defined formulas and calculations
 
+Few things have brought computing power to the masses more effectively than the humble spreadsheet program. By combining data, simple logic, and mathematical operations together in a single environment, it is possible to handle a very wide range of computational needs. Nearly every company you can think of has at least one person who knows how to work with spreadsheets, and some businesses seem to be completely powered by them. The ubiquity of the spreadsheet model of computation is both a blessing and a curse.
+
+On the one hand, its wonderful for someone with business knowledge but only a basic level of technical proficiency to be able to process data and crunch numbers without needing to learn how to build full scale programs. 
+
+Spreadsheets encourage ad-hoc exploration,  and also make it easy to share business processes and results throughout an organization. Because spreadsheets can be written by the people who actually understand the core problem to be solved, there isn't a risk of information being "lost in translation" in the way that often happens in full scale software projects.
+
+On the other hand, there is a dark side to every powerful tool. Every spreadsheet is not only a business document, but is also an awkward data storage mechanism and a computer program. 
+
+Data management practices around spreadsheets can be horrifyingly bad, to the point where keeping track of what files have what data, and which are up to date, which are kept for archival purposes, and which should be discarded entirely is nearly impossible to do without a very carefully designed business process in place.
+
+Also, the tendency of spreadsheets to become "almost-but-not-quite" full featured computer programs over time can lead to some major maintenance headaches, even if a business manager wouldn't necessarily think of things that way.  There are things we take for granted as software developers (i.e. reusability, testability, changeability, revision control)  that wouldn't even enter into a spreadsheet author's mind even as they started to face major friction in their workflow.
+
+The solution to this problem is not to seek some sort of killer application to revolutionize the way spreadsheets are built, nor is it to train those who write spreadsheets to become "full stack" programmers. 
+
+Instead, what is needed is to find a proper middle ground whenever a business problem grows beyond the scope of what can be done by some smart folks who know how to write formulas and design basic computational models,  but can't or don't want to maintain full scale software applications on their own.
+
+In this article, we'll explore one possible solution to the "spreadsheet scaling problem"... embedding a formula evaluator into a business application so that users can write their own Excel-like scripts to do computations, while programmers handle the data management and core business processes using standard application development practices and tools.
+
+
+------------
 
 ## What is a formula processor?
 
