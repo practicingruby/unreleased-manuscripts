@@ -20,6 +20,46 @@ Instead, what is needed is to find a proper middle ground whenever a business pr
 In this article, we'll explore one possible solution to the "spreadsheet scaling problem"... embedding a formula evaluator into a business application so that users can write their own Excel-like scripts to do computations, while programmers handle the data management and core business processes using standard application development practices and tools.
 
 
+----------
+
+Start w. a high level explanation of the two different kinds of boxes we're looking at, and how to compute their materials.
+
+(i.e. a rectangular box is simple (but not TOO simple, remember the corners!), but what about a much more complicated example?, then explain yin-yang).
+
+-----------
+
+pi * diameter          = circumference = outer wall
+pi * (diameter / 2) = length of inner wall  (obtained  by construction graph)
+(pi * diameter) / 2  = pi * (diameter / 2 ) [associative property]
+(pi * diameter) / 2 = circumference / 2
+
+
+------------
+
+* Show completed tables and describe layout of "Calm" and "Yinyang" gardens, and describe the customizable parameters for each.
+* Break down the materials list and relevant formulas.
+* 
+
+
+# Formulas used
+
+## Rectangular garden (calm)
+
+Walls: `2*width*height + 2*length*height` (perimeter of box * height)
+Base: `width*height` (area of rectangle)
+Sand: `volume*fill` (% of volume of box)
+
+`volume = length * width * height`
+
+## Circular garden (yinyang)
+
+Walls: `pi*diameter*height` (circumference of circle * height)
+Base: `pi*radius^2` (area of circle)
+Black sand: `cylinder * 0.5 * fill` (% of half the cylindrical volume of the circle)
+White sand: `cylinder * 0.5 * fill` (% of half the cylindrical volume of the circle)
+
+`cylinder = pi * radius^2 * height`
+
 ------------
 
 ## What is a formula processor?
