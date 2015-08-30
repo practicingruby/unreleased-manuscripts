@@ -1,161 +1,216 @@
+**NOTE: THIS IS CURRENTLY BEING WORKED ON. DON'T EXPECT IT TO BE READY TO READ!**
 
-# Safely evaluating user-defined formulas and calculations
+Imagine that you're a programmer for a company that sells miniature zen gardens, and you've been asked to create a  small calculator program that will help determine the material costs of the various different garden designs in the company's product line.
 
-Few things have brought computing power to the masses more effectively than the humble spreadsheet program. By combining data, simple logic, and mathematical operations together in a single environment, it is possible to handle a very wide range of computational needs. Nearly every company you can think of has at least one person who knows how to work with spreadsheets, and some businesses seem to be completely powered by them. The ubiquity of the spreadsheet model of computation is both a blessing and a curse.
+The tool itself is conceptually simple: The dimensions of the garden to be built will be entered via a web form, and then calculator will output the quantity and weight of all the materials that are needed to construct the garden. 
 
-On the one hand, its wonderful for someone with business knowledge but only a basic level of technical proficiency to be able to process data and crunch numbers without needing to learn how to build full scale programs. 
+In practice, the problem is a little more complicated, because the company offers many different kinds of gardens. Even though only a handful of basic materials are used throughout the entire product line, the gardens themselves can consist of anything from a basic rectangular design to very intricate and complicated layouts. For this reason, figuring out how much material is needed for each garden type requires the use of custom formulas.
 
-Spreadsheets encourage ad-hoc exploration,  and also make it easy to share business processes and results throughout an organization. Because spreadsheets can be written by the people who actually understand the core problem to be solved, there isn't a risk of information being "lost in translation" in the way that often happens in full scale software projects.
+> MATH WARNING: You don't need to try to understand the geometric computations being done throughout this article, unless you enjoy that sort of thing; just notice how all the formulas are nothing more than basic arithmetic expressions operating on a handful of variables.
 
-On the other hand, there is a dark side to every powerful tool. Every spreadsheet is not only a business document, but is also an awkward data storage mechanism and a computer program. 
+The following diagram shows the formulas used for determining the material quantities for two popular products. *Calm* is a simple rectangular garden, while *Yinyang* is a more complex shape that requires working with circles and semicircles. 
 
-Data management practices around spreadsheets can be horrifyingly bad, to the point where keeping track of what files have what data, and which are up to date, which are kept for archival purposes, and which should be discarded entirely is nearly impossible to do without a very carefully designed business process in place.
+![](/uploads/db0611/original/1X/b3dfbcd87dcf8ba9dadc1b5cf926e0d1d1b2a513.png)
 
-Also, the tendency of spreadsheets to become "almost-but-not-quite" full featured computer programs over time can lead to some major maintenance headaches, even if a business manager wouldn't necessarily think of things that way.  There are things we take for granted as software developers (i.e. reusability, testability, changeability, revision control)  that wouldn't even enter into a spreadsheet author's mind even as they started to face major friction in their workflow.
+In the past, material quantities and weights for new product designs were computed using Excel spreadsheets, which worked fine when the company only had a few basic garden layoutts. But to keep up with the incredibly high demand for bespoke desktop Zen Gardens, the business managers have insisted that their workflow become more Agile by moving all product design activities to a web application in THE CLOUD.
 
-The solution to this problem is not to seek some sort of killer application to revolutionize the way spreadsheets are built, nor is it to train those who write spreadsheets to become "full stack" programmers. 
+The major design challenge for building this calculator is that it would not be practical to have a programmer update the codebase whenever a new product idea was dreamt up by the product design team. Some days, the designers have been known to attempt at least 32 different variants on a "snowman with top-hat" zen garden, and in the end only seven or so make it to the marketplace. Dealing with these rapidly changing requirements would drive any reasonable programmer insane.
 
-Instead, what is needed is to find a proper middle ground whenever a business problem grows beyond the scope of what can be done by some smart folks who know how to write formulas and design basic computational models,  but can't or don't want to maintain full scale software applications on their own.
+After reviewing the project requirements, you decide to build a program that will allow the product design team to specify project requirements in a simple, Excel-like format and then safely execute the formulas they define within the context of a Ruby-based web application.
 
-In this article, we'll explore one possible solution to the "spreadsheet scaling problem"... embedding a formula evaluator into a business application so that users can write their own Excel-like scripts to do computations, while programmers handle the data management and core business processes using standard application development practices and tools.
+Fortunately, the [Dentaku](https://github.com/rubysolo/dentaku) formula parsing and evaluation library was built with this exact use case in mind. Just like you, Solomon White also really hates figuring out snowman geometry, and would prefer to leave that as an exercise for the user.
 
+## First steps with the Dentaku formula evaluator
 
-----------
+The purpose of Dentaku provide a safe way to execute user-defined mathematical formulas within a Ruby application.  For example, consider the following code:
 
-Start w. a high level explanation of the two different kinds of boxes we're looking at, and how to compute their materials.
+```ruby
+require "dentaku"
 
-(i.e. a rectangular box is simple (but not TOO simple, remember the corners!), but what about a much more complicated example?, then explain yin-yang).
+calc = Dentaku::Calculator.new
+volume = calc.evaluate("length * width * height", 
+                       :length => 10, :width => 5, :height => 3)
 
------------
+p volume #=> 150
+```
 
-pi * diameter          = circumference = outer wall
-pi * (diameter / 2) = length of inner wall  (obtained  by construction graph)
-(pi * diameter) / 2  = pi * (diameter / 2 ) [associative property]
-(pi * diameter) / 2 = circumference / 2
+Not much is going on here -- we have some named variables, some numerical values, and a simple formula: `length * width * height`.  Nothing in this example appears to be sensitive data, so on the surface it may not be clear why safety is a key concern here. 
 
+To understand the risks, you consider an alternative implementation that allows mathematical formulas to be evaluated directly as plain Ruby code. You implement the equivalent code without the use of an external library, just to see what it would look like:
 
-------------
+```ruby
+def evaluate_formula(expression, variables)
+  obj = Object.new
+  context = obj.send(:binding)
 
-* Show completed tables and describe layout of "Calm" and "Yinyang" gardens, and describe the customizable parameters for each.
-* Break down the materials list and relevant formulas.
-* 
+  variables.each { |k,v| eval("#{k} = #{v}", context) }
+  eval(expression, context)
+end
 
+volume = evaluate_formula("length * width * height",
+                  :length => 10, :width => 5, :height => 3) 
 
-# Formulas used
+p volume #=> 150
+```
 
-## Rectangular garden (calm)
+Although conceptually similar, it turns out these two code samples are worlds apart when you consider the implementation details:
 
-Walls: `2*width*height + 2*length*height` (perimeter of box * height)
-Base: `width*height` (area of rectangle)
-Sand: `volume*fill` (% of volume of box)
+* When using Dentaku, you're working with a very basic external domain specific language, which only knows how to represent simple numbers, variables, mathematical operations, etc. No direct access to the running Ruby process or its data is provided, and so formulas can only operate on what is explicitly provided to them whenever a `Calculator` object is instantiated.
 
-`volume = length * width * height`
+* When using `eval` to run formulas as Ruby code, by default any valid Ruby code will be executed. Every instantiated object in the process can be accessed, system commands can be run, etc. This isn't much different than giving users access to the running application via an `irb` console.
 
-## Circular garden (yinyang)
+This isn't to say that building a safe way to execute user-defined Ruby scripts isn't possible (it can even be practical in certain circumstances), but if you go that route, safe execution is something you need to specifically design for. By contrast, Dentaku is safe to use with minimally trusted users, because you have very fine-grained control over the data and actions those users will be able to work with.
 
-Walls: `pi*diameter*height` (circumference of circle * height)
-Base: `pi*radius^2` (area of circle)
-Black sand: `cylinder * 0.5 * fill` (% of half the cylindrical volume of the circle)
-White sand: `cylinder * 0.5 * fill` (% of half the cylindrical volume of the circle)
+You sit quietly for a moment and ponder the implications of all of this. After some very serious soul searching, you decide that for the existing and forseeable future needs of our overworked but relentlessly optimistic Zen garden designers... Dentaku should work just fine.
 
-`cylinder = pi * radius^2 * height`
+## Building the web interface
 
-------------
+You spend a little bit of time building out the web interface for the calculator, using Sinatra and Bootstrap. It consists of only two screens, both of which are shown below:
 
-## What is a formula processor?
+![](/uploads/db0611/original/1X/d6012db2aae6eed8b2440d45dee96c753c64f3a4.png)
 
-* A tool for safely executing user defined computations
-* An external domain-specific language for formula parsing and evaluation
+People who mostly work with Excel spreadsheets all day murmur that you must be some sort of wizard, and compliment you on your beautiful design. You pay no attention to this, because your mind has already started to focus on the more interesting parts of the problem.
 
-### Use cases
+## Defining garden layouts as simple data tables
 
-* You want to give the user a very simple syntax / computation model to work with.
+With a basic idea in mind for how you'll implement the calculator, your next task is to figure out how to define the various garden layouts as a series of data tables.
 
-* You have a business domain where calculations may change much more often than the underlying data model, and/or the calculations aren't known in advance but the data model is well defined.
+You decide to start with a weight calculation lookup table, as it's one of the more simple computations that needs to be done. In practice, this boils down to minor variants on the `mass = density * volume` equation:
 
-* You have technical business users that can write formulas but don't want to or can't maintain a full application's codebase.
+![](/uploads/db0611/original/1X/1ed4d2962e804418a86738098a49c4265e5ee539.png)
 
-* You want to create a hard barrier between user-provided computations and the main application to constrain data access, allow for safe execution of untrusted code, etc.
+This material weight lookup table is suitable for use in all of the product definitions, but the `quantity` value will vary based both on the dimensions of the garden to be built and the physical layout of the garden.
 
-* You want to be able to store computations as data,  and update/execute them at runtime without access to the application’s source code or the need to redeploy code.
+With that in mind, you turn your attention to the tables that determine how much material is needed for each project, starting with the Calm rectangular garden as an example.
 
-## Case Study: Zen garden cost calculator
+Going back to the diagram from earlier, you can see that the quantity of materials needed by the Calm project can be completely determined by the length, width, height, and desired fill level for the sandbox:
 
-> See the code for the project at: https://github.com/PracticingDeveloper/dentaku-zen-garden
+![](/uploads/db0611/original/1X/ccd891b1b858d184b3162ff5b74910bd904f9684.png)
 
-We’re doing cost calculations for building zen gardens!
+You could directly use these formulas in project specifications, but it would feel a little too low-level. Project designers will need to work with various box-like shapes often, and so it would feel more natural to describe the problem with terms like `perimeter`, `area`, `volume`, etc. Knowing that the Dentaku formula processing engine provides support for creating helper functions, you come up with the following definitions for the materials used in the Calm project:
 
-The idea being that there will be a common set of supplies for a store that sells zen gardens, and they will be reused across various different styles of gardens.
+![](/uploads/db0611/original/1X/8028c3fd2969891df022fe4ba6c43c911ce847ab.png)
 
-But the gardens are not sold in fixed sizes, the customer gets to specify the size they want, and the calculator will figure out how much materials are needed, and what those materials will cost (as well as a very basic shipping weight calculation)
+With this work done, you turn your attention to the Yinyang circular garden project. Even though it is much more complex than the basic rectangular design, you notice that it too is defined entirely in terms of a handful of simple variables -- diameter, height, and fill level:
 
-So the format we have right now for specifying materials and projects is just some CSV files…
+![](/uploads/db0611/original/1X/e921184d0a1e72fbd3297f51e00cffb3f977c4cc.png)
 
-For example, this is the materials list: https://github.com/PracticingDeveloper/formula-engine/blob/master/db/materials.csv
+As was the case before, it would be better from a product design perspective to describe things in terms of circular area, cylindrical volume, and circumference rather than the primary dimensional variables, so you design the project definition with that in mind:
 
-The weight column is a set of formulas… (@rubysolo got them from http://www.mojobob.com/roleplay/weight_chart.html)
+![](/uploads/db0611/original/1X/85ca472049bcf7976ccdf0ccf2db6de22cbf2420.png)
 
-In there… you see quantity, which is going to get defined elsewhere.
+**FIXME: ADD THE COMMON FORMULA TABLE HERE**
 
-But here you see the basic idea behind using a formula engine… imagine instead of CSV, you were using a database to store this information.
+At this point, you realize that you have enough raw data to start working on implementing the calculator program. You may need to change the domain model at some point in the future to support more complex use cases, but many different garden layouts can already be represented in this basic format.
 
-Elsewhere, you’d define a project, which uses a subset of these materials.
+> **SOURCE FILES:** calm.csv // yinyang.csv // materials.csv // common_formulas.csv
 
-For example, this is a rectangular zen garden box: https://github.com/PracticingDeveloper/formula-engine/blob/master/db/projects/calm.csv
+## Implementing the formula processor
 
-Notice that the names here match that of the names on the materials list, and that the formulas being used are meant to determine the quantity used in the material weight calculations.
+You start off by building a utility class for reading all the relevant bits of project data that will be needed by the calculator. For the most part, this is another boring chore, involving basic manipulation of CSV and JSON data into arrays and hashes.
 
-So we can have formulas built on top of other formulas… we can look at how that’s wired up later.
+After a bit of experimentation, you end up implementing the following interface:
 
-And here we have another project… which is a circular zen garden with two colors of sand (suitable for building a yin yang pattern… so I suppose it’s a Taoist garden, actually)
+```text
+>> Project.available_projects
+=> ["calm", "yinyang”]
 
-https://github.com/PracticingDeveloper/formula-engine/blob/master/db/projects/yinyang.csv
+>> Project.variables("calm")
+=> ["length", "width", "height”]
 
-Notice here… that there are few different kinds of terms being used in the formulas: diameter, radius, cylinder
+>> Project.weight_formulas["black sand"]
+=> "quantity * 2.000”
 
-Some of these would be specified directly as variables… i.e. you’d enter a diameter for the circle
+>> Project.quantity_formulas("yinyang")
+          .select { |e| e["name"] == "black sand" }
+=> [{"name" => "black sand", 
+     "formula" => "cylinder_volume * 0.5 * fill", 
+     "unit" => "cu cm”}]
 
-But then others can be defined by global rules… for example, that :radius => “diameter/2"
+>> Project.common_formulas["cylinder_volume"]
+=> "circular_area * height”
+```
 
-Or 'cylinder' => '3.1416 * radius^2 * height’ And so in this sense, you can define these kinds of calculations up front, then use them throughout your calculations.
+Down the line, the `Project` class will probably read from a database rather than text files, but this is largely an implementation detail. Rather than getting bogged down in ruminations about the future, you shift your attention to the heart of the problem -- the Dentaku-powered `Calculator` class.
 
-When you glue all of this together, you get a simple workflow that basically asks the customer to pick a project, specify some basic dimensions (i.e. a diameter for a circular project, or a width and height for a rectangular one), and then Dentaku would churn through all of this and convert those measurements into areas and volumes, and then the areas and volumes into weights, and then all of that into costs.
+**TODO: CLEANUP IRB SAMPLE SHOWN BELOW**
 
-## Why introduce an exernal DSL instead of writing formulas in Ruby?
+```text
+>> calc = Calculator.new("yinyang", :diameter => 20, :height => 5); nil
+=> nil
+>> pp calc.materials.map { |e| [e['name'], e['quantity'].ceil, e['unit']] }
+[["1cm thick flexible strip", 472, "sq cm"],
+ ["granite slab", 315, "sq cm"],
+ ["white sand", 550, "cu cm"],
+ ["black sand", 550, "cu cm"]]
+=> [["1cm thick flexible strip", 472, "sq cm"], ["granite slab", 315, "sq cm"], ["white sand", 550, "cu cm"], ["black sand", 550, "cu cm"]]
+>> pp calc.shipping_weight
+4006
+=> 4006
+>> calc.shipping_weight
+=> 4006
+```
 
-* Safely evaluating custom Ruby code at runtime presents many security challenges,  at both the application and operating system level. Creating some sort of sandboxed environment is possible, but not trivial.
+```ruby
+class Calculator
+  def initialize(project_name, params={})
+    @params = Hash[params.map { |k,v| [k,Dentaku(v)] }]
 
-*  Ruby is a very complex language with rich syntax, and so it is likely to give much more power than what is actually needed for the purposes of supporting simple numeric and logical computation. This means both more for the users to learn, and more opportunities to run into problems.
+    @quantity_formulas = Project.quantity_formulas(project_name)
+    @common_formulas   = Project.common_formulas
+    @weight_formulas   = Project.weight_formulas
+  end
 
-* Debugging Ruby code that was evaluated at runtime can be very challenging. It is possible to add constraints to mitigate this problem somewhat, but doing so requires careful design consideration.
+  # ...
+end
+```
 
-* Constraining valid and invalid rules in Ruby is challenging because of the many ways that Ruby allows you to circumvent its own access controls. By contrast, an external DSL can bake those rules directly into the language.
+```ruby
+# class Calculator
 
-* Once you decide to allow user-defined Ruby scripts to be executed at runtime, you will inevitably end up spending as much time and effort thinking through that design decision as you do on building the actual computational model your application needs. In other words, you will end up dealing with many incidental implementation details rather than the functional requirements of the system you're building.
+  def materials
+    calculator = Dentaku::Calculator.new
 
-## Other useful Dentaku features
+    @common_formulas.each { |k,v| calculator.store_formula(k,v) }
+    
+    @quantity_formulas.map do |material|
+      amt = calculator.evaluate(material['formula'], @params)
 
-`TODO`
+      material.merge('quantity' => amt)
+    end
+  end
+```
 
-(Not sure where in the article this belongs, if its needed at all)
-(Once we make a list, consider going back and working examples into case study, then kill this section)
+This is some text
 
-## What are the challenges and downsides to look out for?
+```ruby
+# class Calculator
 
-### Caveats for formula processors in general:
+  def shipping_weight
+    calculator = Dentaku::Calculator.new
 
-* Because all user-defined computations will be run through the formula processor rather than directly integrated with the application, you need to explicitly manage all data access, and also explicitly define any helper functions that you want to expose for use in formulas. This can be beneficial in that it forces you to make explicit choices about what capabilities to provide users with, but it also creates some maintenance overhead.
+    # Sum up weights for all materials in project based on quantity
+    materials.reduce(0.0) { |s, e| 
+      weight = calculator.evaluate(@weight_formulas[e['name']], e)
 
-* By introducing an external DSL with its own syntax and semantics, you are effectively introducing an extra language into the mix, which forces you to translate concepts and structures between your main application and the formula processor. (i.e. data types need to be translated, parsing rules, error states, etc.) -- This is mainly a concern for application maintainers, not the users who are writing formulas.
+      s + weight
+    }.ceil
+  end
+```
 
-* Figuring out how to store, load, update, and maintain your formulas becomes an open-ended problem, and you may end up losing some of the certain niceties that come along with a traditional development environment (or you'll need to recreate them)... i.e. things like revision control, syntax highlighting, rich text editing capabilities, debugging tools, etc. 
+----
 
-### Dentaku-specific caveats
+* Performance implications
+* Error handling (could be better or worse, but going to be different)
+* Second system, w. its own semantics
+* Limited range of types to work w. (feature and limitation)
 
-Generally speaking, Dentaku works best with simple numerical formulae and small data sets (i.e. you could comfortably run computations in a loop with a few thousand data points, but not millions).
+> A COMPLETE, RUNNABLE SAMPLE PROJECT IS AVAILABLE AT [REPO]
 
-* Current parser is an unoptimized regular-expresssion based implementation, and Dentaku does not have a well-defined intermediate representation of a parsed formula.
+---
 
-* Parsing/evaluation is done in one step without caching, so the parsing cost is incurred every time a formula is executed. (i.e. the formula are always intrepreted rather than compiled)
+Possibly recommend exercises.
 
-* Dentaku does not currently support any collection data types, so doing things like `SUM`, `AVERAGE`, etc. on an array of numbers isn't possible... this needs to be done at the Ruby level instead.
+---
+
+**TODO: Everything else discussed in the [article outline](http://discourse.practicingruby.com/t/outline-safely-evaluating-user-defined-formulas-and-calculations/40).**
