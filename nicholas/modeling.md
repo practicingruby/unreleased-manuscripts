@@ -17,18 +17,16 @@ Your deliverables (modeling benefits, list of strategies + related examples, inf
     - "Figure out how to separate entities from descriptions"
 - [ ] come up with two more, we’d be in good shape
 - [ ] A high level overview of the system.  You have a small list of features, I’d want something along those lines but in a prose format. We need this to fill in the back story around the diagram and to give the reader an understanding of the context we’re working in.
-
 ## Tips:
 
 - "Start with too much material, then give the reader just enough"
 
 # Benefits
 
-- accelerated domain modeling and understanding: archetypes allow you to quickly dissect a domain, leverage an existing meta-model to understand new domains, understand new domains by leverage examples for unrelated domains (e.g. this is like a partial shipment in an commerce domain)
+- accelerated domain modeling and understanding: archetypes allow you to quickly dissect a domain, leverage an existing meta-model to understand new domains, understand new domains by leverage examples from unrelated domains (e.g. this is like a partial shipment in an commerce domain)
 - foundational communication tool: provides a common language to discuss domain models with your team members, similar benefits as "design patterns" provides
 - agile collaboration tool: the format (e.g. color) lends itself to low-fidelity modeling techniques using post-it notes
 - allows to understand foreign and complex domains
-
 
 # Key Strategies
 
