@@ -112,8 +112,11 @@ order_items - shipment_items - return-items
   - plug-in points
   - interactions
 
-## Events
+## Events (Pink)
 
+- required to be recorded for business or legal purposes [Coad99
+- "moment" in time or over an "interval" of time
+- interactions between entities (parties, places, things)
 - examples:
   - registration
   - order
@@ -127,20 +130,22 @@ order_items - shipment_items - return-items
   - follow-up
   - composite
 
-## Roles
+## Roles (Yellow)
 
-- Roles model the behavior of an Entity collaborating with an Event
+- Roles model the behavior of an Entity collaborating with an Event (i.e participation in an event)
 - may also have attributes
 - one of the most important archetypes in avoiding god-objects by bloating Entities with responsibilities
+- examples:
 
 ## Entities
 
-- Entities play Roles
+- Entities play different roles
 - Coad refer to Roles as hats Entities wear
 - Entities can play many Roles
 - parties (people, organizations), aka actors
 - places
 - things
+- examples:
 
 ## Descriptions
 
@@ -152,6 +157,7 @@ order_items - shipment_items - return-items
 - hence Coad's use of "catalog-entry like description"
 - provide run-time inheritance for Entities, e.g. the common attributes and methods
 - can also describe Events
+- examples:
 
 # Footnotes
 
