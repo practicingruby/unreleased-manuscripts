@@ -5,6 +5,8 @@
 - [ ] flesh out descriptions of archetypes
 - [ ] interweave the example domain "Transplant Management" into the notes below.
 - [ ] add sequence diagrams
+- [ ] add business rules
+- [ ] add triggers
 
 ## To-do items
 
@@ -139,7 +141,7 @@ order_items - shipment_items - return-items
 - Roles model the behavior of an Entity collaborating with an Event (i.e participation in an event)
 - may also have attributes
 - one of the most important archetypes in avoiding god-objects by bloating Entities with responsibilities
-- examples:
+- examples: TODO
 
 ## Entities
 
@@ -149,7 +151,7 @@ order_items - shipment_items - return-items
 - parties (people, organizations), aka actors
 - places
 - things
-- examples:
+- examples: TODO
 
 ## Descriptions
 
@@ -161,7 +163,7 @@ order_items - shipment_items - return-items
 - hence Coad's use of "catalog-entry like description"
 - provide run-time inheritance for Entities, e.g. the common attributes and methods
 - can also describe Events
-- examples:
+- examples: TODO
 
 # Footnotes
 
