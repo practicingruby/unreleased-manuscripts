@@ -1,5 +1,11 @@
 # Modeling in Color
 
+## Next
+
+- [ ] flesh out descriptions of archetypes
+- [ ] interweave the example domain "Transplant Management" into the notes below.
+- [ ] add sequence diagrams
+
 ## To-do items
 
 Your deliverables (modeling benefits, list of strategies + related examples, informal overview of project)
