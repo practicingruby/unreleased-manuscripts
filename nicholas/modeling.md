@@ -79,6 +79,25 @@ order_items - shipment_items - return-items
 - derive feature list (interactions)  
 - test model with interactions
 
+
+## Object Modeling
+
+- what is it?
+- when do I use it?
+- why should I use it?
+
+## Domain
+
+- problem area with a boundary
+- domain models
+   - aka business objects, problem domain (PD) objects, models
+   - specific concern
+   - represent objects in the problem domain
+- specific concern/set of responsibilities (see Archetypes)
+  - not UI/View (they display PD objects)
+  - not database (they persist PD objects)
+  - embedded business rules for collaborations between PD objects
+
 ## Archetypes
 
 - "a form which all things of the same kind more or less follow" (JMICWU pg 2)
