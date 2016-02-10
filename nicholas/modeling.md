@@ -28,6 +28,7 @@ Your deliverables (modeling benefits, list of strategies + related examples, inf
 - accelerated domain modeling and understanding: archetypes allow you to quickly dissect a domain, leverage an existing meta-model to understand new domains, understand new domains by leverage examples from unrelated domains (e.g. this is like a partial shipment in an commerce domain)
 - foundational communication tool: provides a common language to discuss domain models with your team members, similar benefits as "design patterns" provides
 - agile collaboration tool: the format (e.g. color) lends itself to low-fidelity modeling techniques using post-it notes
+- color makes the archetypes easy to learn
 - allows to understand foreign and complex domains
 
 # Key Strategies
@@ -58,6 +59,7 @@ order_items - shipment_items - return-items
 ## Iteration 1: Discovery
 
 - determine the "why": the reason and causality for the key event, this helps to flesh out the other "W's"
+- they "why" may end up as a "purpose" attribute on the Event (as an enumeration or free text)
 - continue with identifying the "entities" collaborating in the event
 - "who" (aka actors): who collaborates in the event (parties: people, organisations)
 - "where": where does the even take place (place)
@@ -107,27 +109,55 @@ order_items - shipment_items - return-items
 ## Archetypes
 
 - "a form which all things of the same kind more or less follow" (JMICWU pg 2)
-- the form being an object's responsibilities:
+- the form being an object's responsibilities (see summary below):
   - what I know
   - who I know
   - what I do
 - in other words:
   - attributes
-  - collaborations (links)
+  - collaborations (links) (see the Domain Neutral Component)
   - methods
   - plug-in points
   - interactions
+- responsibilities are not exactly the same, typically a sub-set, but may include others as well specific to the domain
+
+### Typical Responsibilities (Attributes and Behaviour)
+
+Illustrates the typical attributes and behavior archetypes have.
+
+![Typical Responsibilities from http://www.step-10.com/SoftwareDesign/ModellingInColour/ ](./typical_responsibilities.png)
+
+
+### Typical Collaborations
+
+Illustrates the typical collaborations and interactions archetypes have.
+
+![Typical collaborations from http://www.step-10.com/SoftwareDesign/ModellingInColour/ ](./typical_collaborations.png)
+
+### Domain Neutral Component (DNC)
+
+Events with the "what", "who", and "where". Note Entity "what", connected to the Event detail.
+
+![Domain Neutral Component from http://www.step-10.com/SoftwareDesign/ModellingInColour/ ](./dnc.png)
+
+- archetypal pattern for object models
+- just a template
+- remove classes with no responsibilities
+- 1-1 associations indicate opportunity to combine classes
+
 
 ## Events (Pink)
 
 - required to be recorded for business or legal purposes [Coad99
 - "moment" in time or over an "interval" of time
+- related to an action or activity
+- other archetypes describe who, what, where
 - interactions between entities (parties, places, things)
-- examples:
-  - registration
-  - order
-  - reservation
-  - subscription
+- examples (activity):
+  - registration (registering)
+  - order (ordering)
+  - reservation (reserving)
+  - subscription (subscribing)
 - types
   - discrete
   - evolving
@@ -140,10 +170,14 @@ order_items - shipment_items - return-items
 
 - Roles model the behavior of an Entity collaborating with an Event (i.e participation in an event)
 - may also have attributes
-- one of the most important archetypes in avoiding god-objects by bloating Entities with responsibilities
-- examples: TODO
+- one of the most important archetypes in avoiding god-objects by reducing the responsibilities of Entities
+- examples:
+  - customer
+  - sales person
+  - employee
 
-## Entities
+
+## Entities (Green)
 
 - Entities play different roles
 - Coad refer to Roles as hats Entities wear
@@ -151,11 +185,20 @@ order_items - shipment_items - return-items
 - parties (people, organizations), aka actors
 - places
 - things
-- examples: TODO
+- examples:
+  - person
+  - city
+  - computer
 
-## Descriptions
+> Another name sometimes suggested for this archetype is Entity but there are two arguments against using this term. Firstly it is already in use in the data-modelling world and although our parties, places and things naturally map to entities in data modellers' Entity-Relationship diagrams, the converse is not necessarily true. Secondly, the name Party, Place, Thing neatly reminds us that this archetype comes in three flavours, a fact that is of significance in the various analysis patterns involving class archetypes.
+
+-- http://www.step-10.com/SoftwareDesign/ModellingInColour/
+
+## Descriptions (Blue)
 
 - "catalog-entry like description"
+- blue "labels"
+- the "knowledge" layer in the "knowledge-operation layers" MARTIN
 - toughest archetype to differentiate from Entities
 - my favorite example to help understand the difference: product_description#sku vs. product#serial_number
 - Entities are uniquely identifiable; e.g. product#serial_number
@@ -163,7 +206,8 @@ order_items - shipment_items - return-items
 - hence Coad's use of "catalog-entry like description"
 - provide run-time inheritance for Entities, e.g. the common attributes and methods
 - can also describe Events
-- examples: TODO
+- examples:
+  - product description
 
 # Footnotes
 
