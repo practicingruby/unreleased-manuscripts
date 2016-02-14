@@ -23,6 +23,14 @@ Your deliverables (modeling benefits, list of strategies + related examples, inf
 
 - "Start with too much material, then give the reader just enough"
 
+# Introduction
+
+- Object Modeling approach
+- Use four archetypes to identify common responsibilities of objects
+- Assigns unique colors to each archetype
+- Makes modeling tools such as UML more visual
+- Developed by Peter Coad, Eric Lefebvre, and Jeff De Luca
+
 # Benefits
 
 - accelerated domain modeling and understanding: archetypes allow you to quickly dissect a domain, leverage an existing meta-model to understand new domains, understand new domains by leverage examples from unrelated domains (e.g. this is like a partial shipment in an commerce domain)
@@ -41,6 +49,10 @@ Your deliverables (modeling benefits, list of strategies + related examples, inf
 order       - shipment       - return
   |                |              |
 order_items - shipment_items - return-items
+  |
+item_in_sale
+  |
+product - price
 ```
 - a tool to prevent myself from going down the rabbit hole, always ask "does the system need to remember this?"
 - separate Entities from Descriptions
@@ -56,6 +68,10 @@ order_items - shipment_items - return-items
 - the process outlined below is only a rough estimate, rarely happens in an "exact" order
 - however, the idea of separating "discovery" from "refinement" I have found quite useful
 
+**Transplant Example:**
+
+- the "transplant" actually involves two key events, an operation for both the recipient and the donor
+
 ## Iteration 1: Discovery
 
 - determine the "why": the reason and causality for the key event, this helps to flesh out the other "W's"
@@ -70,10 +86,23 @@ order_items - shipment_items - return-items
 - build up a timeline of events, determine the "why", identify the "entities" for each
 - throughout add obvious attributes and behavior
 
-## Iteration 2: Refinement
+**Transplant Example:**
+
+- why: a `patient` has reached `end-stage renal failure` which means a `patient` no longer has use of their renal organ and it will not return. At this stage the patient requires dialysis to survive and a transplant is considered to improve quality of life.
+- who: the actual transplant is an `operation` on two patients; for a transplant to occur requires a patient receiving an organ, the `recipient` and a patient donating an organ, the `living donor`
+- where: the transplant requires an operation at a `hospital/site`
+- what: the `operation` transplants an `organ` (kidney, liver, pancreas)
+- when: the `operation` itself is a discrete event, but the transplant process has preceding and follow-up events
+  - for a recipient to participate in a transplant operation, a potential `donation` must be identified
+  - the potential `living donor` must have a successful `donor assessment` for the transplant to be scheduled
+  - the `donation` requires the `recipient` to have a `recipient assessment` successfully completed to ensure a `recipient` is applicable for a transplant, and is used for comparison to determine if the `recipient` and `donor` are a "match"
+- in the absence of a living donor, a patient will be registered (`registration`) on a `waitlist` for a cadaveric donor.
+- that completes the preceding events, what about the proceeding?
+- [continue from here]
+
+## Iteration 3: Refinement
 
 - extract Roles from entities
-- Coad always models a "Person" explicitly
 - then model the Roles they play in a system (see behaviour)
 - identify/extract Descriptions from Entities
 - often mistakenly model objects as Entities (things) when they have responsibilities that follow a Description's archetype
@@ -81,12 +110,18 @@ order_items - shipment_items - return-items
 - promote attributes to objects
 - demote objects to attributes
 
+**Transplant Example:**
+
+- an entity can be a party (person, organization), party or place
+- I often find there is not benefit of modeling a person explicitly in code, so the person responsibilities are "folded" into the the role
+- in the case the person responsibilities are folded into the patient role
+-  a `person` must be a `patient` before they are a `recipient`, likewise for a `living donor`, an example of the "subsequent role pattern"
+
 ## Iteration 3: Behavior
 
 - determine business rules: what conditions must be met for objects to collaborate
 - derive feature list (interactions)  
 - test model with interactions
-
 
 ## Object Modeling
 
@@ -165,12 +200,18 @@ Events with the "what", "who", and "where". Note Entity "what", connected to the
 - patterns
   - follow-up
   - composite
+  - history value (event - description)
 
 ## Roles (Yellow)
 
 - Roles model the behavior of an Entity collaborating with an Event (i.e participation in an event)
 - may also have attributes
 - one of the most important archetypes in avoiding god-objects by reducing the responsibilities of Entities
+- role checks
+  - a person
+  - player object qualifies for the role (e.g age)
+  - conflicting roles
+  - must be playing a role
 - examples:
   - customer
   - sales person
